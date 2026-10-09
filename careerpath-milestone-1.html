@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CareerPath AI - AI-powered career guidance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add("js");try{document.documentElement.dataset.theme=localStorage.getItem("cp-theme")||"dark";}catch(e){document.documentElement.dataset.theme="dark";}</script>
+
+<!-- ============ CSS (the looks) ============ -->
+<style>
+  :root {
+    box-sizing: border-box; color-scheme: dark;
+    padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+    /* Design tokens: burgundy base, gold accent, cream text. Dark theme is the default. */
+    --background: #150c10; --surface: #1e1217; --surface-elevated: #2a181f;
+    --text-primary: #f7f2e8; --text-secondary: #b9aaa6;
+    --accent: #c9a227; --accent-hover: #e3c766; --accent-soft: rgba(201, 162, 39, .12); --on-accent: #2a0b14;
+    --violet: #a33a55; --border: #35242b; --border-strong: #4d343c;
+    --success: #e3c766; --warning: #c9a227; --nav-bg: rgba(21, 12, 16, .92); --radius: 14px;
+    --bg: var(--background); --surface-2: var(--surface-elevated); --border-hi: var(--border-strong);
+    --text: var(--text-primary); --muted: var(--text-secondary); --amber: var(--warning);
+    --head: "Playfair Display", Georgia, "Times New Roman", serif;
+    --body: "Manrope", system-ui, "Segoe UI", Arial, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 400 1.125rem/1.6 var(--body); }
+  a { color: inherit; text-decoration: none; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+  .container { max-width: 1160px; margin: 0 auto; padding: 0 1.5rem; }
+  .skip { position: absolute; left: -999px; top: 0; background: var(--accent); color: var(--on-accent); padding: .6rem 1rem; z-index: 100; }
+  .skip:focus { left: 1rem; top: 1rem; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; padding: .85rem 1.5rem; border-radius: 10px; font: 700 1rem var(--body); border: 1px solid transparent; cursor: pointer; transition: background .2s, border-color .2s, transform .2s; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-primary { background: var(--accent); color: var(--on-accent); }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-ghost { border-color: var(--border-hi); color: var(--text); }
+  .btn-ghost:hover { border-color: var(--accent); background: var(--surface); }
+
+  /* Navigation */
+  .site-header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: var(--nav-bg); border-bottom: 1px solid var(--border); }
+  .nav { display: flex; align-items: center; justify-content: space-between; height: 4.5rem; }
+  .logo { display: flex; align-items: center; gap: .6rem; font: 700 1.3rem var(--head); }
+  .logo-mark { width: 30px; height: 30px; border-radius: 8px; background: var(--accent); display: grid; place-items: center; }
+  .logo-mark svg { width: 18px; height: 18px; }
+  .nav-menu { display: flex; align-items: center; gap: 2rem; }
+  .nav-links { display: flex; gap: 2rem; list-style: none; margin: 0; padding: 0; }
+  .nav-links a { color: var(--muted); font-weight: 500; font-size: 1rem; transition: color .2s; }
+  .nav-links a:hover, .nav-links a[aria-current] { color: var(--text); }
+  .nav-cta { padding: .6rem 1.2rem; }
+  .menu-toggle { display: none; background: transparent; border: 1px solid var(--border); color: var(--text); border-radius: 10px; width: 44px; height: 44px; cursor: pointer; place-items: center; }
+  .menu-toggle svg { width: 22px; height: 22px; }
+
+  /* Hero */
+  .hero { padding: 5rem 0 4rem; text-align: center; background: radial-gradient(60% 55% at 50% 0%, rgba(201, 162, 39, .15), transparent 70%); }
+  .hero h1 { font: 700 clamp(2.5rem, 5.6vw, 4.3rem)/1.05 var(--head); letter-spacing: -.025em; margin: 0 auto 1.3rem; max-width: 15em; }
+  .hero-text { color: var(--muted); font-size: 1.2rem; max-width: 36rem; margin: 0 auto 2.2rem; }
+  .hero-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: .9rem; }
+
+  /* Career journey visual */
+  .journey { margin-top: 5.5rem; padding: 0 0 3rem; }
+  .j-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); position: relative; }
+  .j-steps::before, .j-steps::after { content: ""; position: absolute; top: 27px; left: 10%; height: 2px; }
+  .j-steps::before { right: 10%; background: var(--border); }
+  .j-steps::after { width: 40%; background: linear-gradient(90deg, var(--accent), var(--accent-hover)); box-shadow: 0 0 14px rgba(201, 162, 39, .6); }
+  .j-step { position: relative; padding: 0 .5rem; }
+  .j-node { position: relative; z-index: 1; width: 56px; height: 56px; margin: 0 auto 1rem; border-radius: 50%; display: grid; place-items: center; background: var(--surface); border: 2px solid var(--border-hi); font: 700 1.1rem var(--head); color: var(--muted); }
+  .j-step.done .j-node { border-color: var(--accent); color: var(--accent); }
+  .j-step.active .j-node { background: var(--accent); border-color: var(--accent); color: var(--on-accent); animation: pulse 2.6s ease-out infinite; }
+  .j-step:last-child .j-node { border-color: var(--amber); color: var(--amber); }
+  .j-step b { display: block; font: 600 1.1rem var(--head); }
+  .j-step small { display: block; color: var(--muted); font-size: .95rem; line-height: 1.4; margin-top: .15rem; }
+  .j-chip { display: inline-block; margin-top: .9rem; padding: .2rem .7rem; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--border-hi); font-size: .9rem; }
+  .j-step:nth-child(odd) .j-chip { position: absolute; left: 50%; transform: translateX(-50%); top: -3rem; margin: 0; white-space: nowrap; }
+  .j-step:last-child .j-chip { border-color: var(--amber); }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(201, 162, 39, .55); } 70%, 100% { box-shadow: 0 0 0 16px rgba(201, 162, 39, 0); } }
+
+  /* Careers */
+  .careers { padding: 4.5rem 0 6rem; border-top: 1px solid var(--border); }
+  .section-head h2 { font: 700 clamp(2rem, 4vw, 2.9rem)/1.1 var(--head); letter-spacing: -.02em; margin: 0 0 .7rem; }
+  .section-head p { color: var(--muted); margin: 0; max-width: 34rem; }
+  .tools { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: center; justify-content: space-between; margin: 2.5rem 0 2rem; }
+  .search { position: relative; flex: 1 1 22rem; max-width: 26rem; }
+  .search svg { position: absolute; left: 1rem; top: 50%; width: 20px; height: 20px; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+  .search input { width: 100%; padding: .85rem 1rem .85rem 2.9rem; background: var(--surface); border: 1px solid var(--border-hi); border-radius: 12px; color: var(--text); font: 500 1rem var(--body); transition: border-color .2s; }
+  .search input::placeholder { color: var(--muted); }
+  .search input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201, 162, 39, .2); }
+  .filters { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .fchip { padding: .5rem 1.05rem; border-radius: 99px; background: transparent; border: 1px solid var(--border-hi); color: var(--muted); font: 600 .95rem var(--body); cursor: pointer; transition: all .2s; }
+  .fchip:hover { color: var(--text); border-color: var(--accent); }
+  .fchip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+  .card { position: relative; display: block; text-align: left; width: 100%; padding: 1.6rem; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; color: inherit; font: inherit; cursor: pointer; overflow: hidden; transition: transform .2s, border-color .2s, background .2s, box-shadow .2s; animation: fade .35s ease-out both; }
+  .card[hidden] { display: none; }
+  .card.lead { grid-column: span 2; }
+  .card::before { content: ""; position: absolute; left: 0; top: 0; height: 3px; width: 0; background: var(--accent); transition: width .3s; }
+  .card:hover { transform: translateY(-4px); background: var(--surface-2); border-color: var(--accent); }
+  .card:hover::before { width: 3.5rem; }
+  .card[aria-pressed="true"] { border-color: var(--accent); background: var(--surface-2); box-shadow: 0 0 0 1px var(--accent), 0 12px 40px rgba(201, 162, 39, .16); }
+  .card[aria-pressed="true"]::before { width: 100%; }
+  .cat { display: flex; align-items: center; gap: .5rem; color: var(--muted); font-size: .95rem; margin-bottom: .9rem; }
+  .cat i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .cat i.c-tech { background: #7aa7ff; } .cat i.c-design { background: var(--amber); } .cat i.c-health { background: #ff8fa3; }
+  .ctitle { display: block; font: 700 1.55rem/1.15 var(--head); letter-spacing: -.01em; margin-bottom: .6rem; }
+  .cdesc { display: block; color: var(--muted); font-size: 1rem; margin-bottom: 1.1rem; max-width: 30rem; }
+  .tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1.4rem; }
+  .tag { padding: .1rem .6rem; border-radius: 8px; border: 1px solid var(--border-hi); font-size: .9rem; }
+  .explore { display: flex; align-items: center; gap: .4rem; font-weight: 700; font-size: 1rem; color: var(--accent); }
+  .explore .arrow { display: inline-block; transition: transform .2s; }
+  .card:hover .arrow { transform: translateX(5px); }
+  .card[aria-pressed="true"] .explore { color: var(--accent-hover); }
+
+  .selection { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1.75rem; padding: 1rem 1.25rem; border: 1px solid var(--accent); border-radius: 12px; background: rgba(201, 162, 39, .08); }
+  .selection[hidden], .empty[hidden] { display: none; }
+  .selection p { margin: 0; font-size: 1.05rem; }
+  .linkbtn { background: none; border: 0; color: var(--accent); font: 700 1rem var(--body); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  .empty { text-align: center; padding: 4rem 1.5rem; border: 1px dashed var(--border-hi); border-radius: 16px; }
+  .empty svg { width: 40px; height: 40px; color: var(--accent); margin-bottom: .8rem; }
+  .empty h3 { font: 700 1.5rem var(--head); margin: 0 0 .4rem; }
+  .empty p { color: var(--muted); margin: 0; }
+
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .hero-copy { animation: fade .6s ease-out both; }
+  .js .reveal { opacity: 0; transform: translateY(14px); transition: opacity .5s ease-out, transform .5s ease-out; }
+  .js .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .js .reveal { opacity: 1; transform: none; }
+  }
+
+  /* Tablet and phone (designed desktop first, then adjusted down) */
+  @media (max-width: 960px) {
+    .menu-toggle { display: grid; }
+    .nav-menu { display: none; position: absolute; left: 0; right: 0; top: 100%; flex-direction: column; align-items: stretch; gap: 1.25rem; background: var(--bg); border-bottom: 1px solid var(--border); padding: 1.5rem; }
+    .nav-menu.open { display: flex; }
+    .nav-links { flex-direction: column; gap: 1rem; }
+    .nav-links a { font-size: 1.1rem; display: block; padding: .3rem 0; }
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .card.lead { grid-column: span 2; }
+  }
+  @media (max-width: 720px) {
+    .hero { padding: 3.5rem 0 3rem; }
+    .journey { margin-top: 3.5rem; padding-bottom: 0; }
+    .j-steps { display: block; max-width: 20rem; margin: 0 auto; text-align: left; }
+    .j-steps::before, .j-steps::after { left: 27px; top: 28px; width: 2px; }
+    .j-steps::before { height: auto; bottom: 28px; right: auto; }
+    .j-steps::after { height: 40%; }
+    .j-step { padding: 0 0 2rem 4.6rem; min-height: 56px; }
+    .j-step:last-child { padding-bottom: 0; }
+    .j-node { position: absolute; left: 0; top: 0; margin: 0; }
+    .j-step b { padding-top: .7rem; }
+    .j-step:nth-child(odd) .j-chip, .j-chip { position: static; transform: none; margin: .5rem 0 0; }
+    .grid { grid-template-columns: 1fr; }
+    .card.lead { grid-column: auto; }
+    .hero-actions .btn { width: 100%; }
+    .filters { flex-wrap: nowrap; overflow-x: auto; padding-bottom: .4rem; width: 100%; }
+    .fchip { white-space: nowrap; }
+    .search { max-width: none; }
+  }
+
+  /* Roadmap (Milestone 4) */
+  .roadmap { padding: 4.5rem 0 6rem; border-top: 1px solid var(--border); background: radial-gradient(50% 30% at 50% 0%, rgba(201, 162, 39, .08), transparent 70%); }
+  .roadmap[hidden] { display: none; }
+  .rm-top { display: flex; flex-wrap: wrap; gap: 1.25rem; justify-content: space-between; align-items: flex-start; }
+  .rm-top h2 { font: 700 clamp(1.9rem, 4vw, 2.8rem)/1.1 var(--head); letter-spacing: -.02em; margin: 0 0 .6rem; }
+  .rm-top h2:focus { outline: none; }
+  .rm-top p { color: var(--muted); margin: 0; max-width: 34rem; }
+  .btn-sm { padding: .6rem 1.1rem; font-size: .95rem; }
+  .rm-prog { margin-top: 2rem; padding: 1.1rem 1.4rem; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
+  .rm-prog-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .4rem 1rem; font-weight: 600; margin-bottom: .7rem; }
+  .rm-prog-row span:last-child { color: var(--muted); font-weight: 500; }
+  .bar { height: 8px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+  .bar span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-hover)); border-radius: 99px; transition: width .4s ease-out; }
+  .tl { list-style: none; margin: 2.5rem 0 0; padding: 0; }
+  .st { position: relative; padding: 0 0 1.5rem 5rem; }
+  .st::before { content: ""; position: absolute; left: 21px; top: 46px; bottom: -.2rem; width: 2px; background: var(--border); }
+  .st:last-child { padding-bottom: 0; } .st:last-child::before { display: none; }
+  .st.done::before { background: var(--accent); }
+  .st-node { position: absolute; left: 0; top: .7rem; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); border: 2px solid var(--border-hi); font: 700 1rem var(--head); color: var(--muted); z-index: 1; }
+  .st.current .st-node { border-color: var(--accent); color: var(--accent); animation: pulse 2.6s ease-out infinite; }
+  .st.done .st-node { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .st-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; transition: border-color .2s, box-shadow .2s; }
+  .st-card:hover { border-color: var(--border-hi); }
+  .st.current .st-card { border-color: var(--accent); box-shadow: 0 10px 36px rgba(201, 162, 39, .12); }
+  .st-title { font: 700 1.45rem/1.2 var(--head); margin: 0 0 .35rem; }
+  .st-expl { color: var(--muted); margin: 0 0 1rem; font-size: 1.05rem; }
+  .st-meta { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: .9rem; }
+  .pill { padding: .15rem .7rem; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--border-hi); font-size: .9rem; }
+  .pill.ok { border-color: var(--accent); color: var(--accent); }
+  .st-proj { margin: 0 0 1.1rem; font-size: 1rem; } .st-proj b { font-weight: 600; }
+  .st-proj span { color: var(--muted); }
+  .st-btn { background: none; border: 0; padding: .4rem 0; color: var(--accent); font: 700 1rem var(--body); cursor: pointer; }
+  .st-btn:hover { color: var(--accent-hover); }
+  .st-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s ease; }
+  .st-body.open { grid-template-rows: 1fr; }
+  .st-inner { overflow: hidden; }
+  .st-inner > div { padding-top: 1.2rem; margin-top: .6rem; border-top: 1px solid var(--border); }
+  .st-inner h4 { font: 600 1rem var(--head); margin: 1.1rem 0 .5rem; } .st-inner h4:first-child { margin-top: 0; }
+  .checks { list-style: none; margin: 0; padding: 0; display: grid; gap: .4rem; }
+  .checks label { display: flex; gap: .75rem; align-items: center; padding: .6rem .8rem; border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: border-color .2s, background .2s; min-height: 44px; }
+  .checks label:hover { border-color: var(--accent); background: var(--surface-2); }
+  .checks input { width: 20px; height: 20px; accent-color: var(--accent); flex: none; cursor: pointer; }
+  .checks input:checked + span { color: var(--muted); text-decoration: line-through; }
+  .st-inner p { margin: 0; color: var(--muted); font-size: 1rem; }
+  .ph { padding: .8rem 1rem; border: 1px dashed var(--border-hi); border-radius: 10px; }
+  @media (max-width: 720px) {
+    .st { padding-left: 3.6rem; } .st::before { left: 17px; top: 38px; }
+    .st-node { width: 36px; height: 36px; font-size: .9rem; top: .9rem; }
+    .st-card { padding: 1.15rem; } .st-title { font-size: 1.25rem; }
+    .st-btn { width: 100%; text-align: left; padding: .8rem 0; }
+    .rm-top .btn { width: 100%; }
+  }
+
+  /* Milestone 5: useful roadmap */
+  .rm-dash { display: grid; grid-template-columns: 1.3fr 1fr; gap: 1.25rem; margin-top: 2rem; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; }
+  .panel h3 { font: 700 1.5rem var(--head); margin: 0 0 .5rem; }
+  .panel p { margin: 0; color: var(--muted); font-size: 1rem; }
+  .lbl { font: 600 .95rem var(--body); color: var(--accent); margin: 0 0 .6rem !important; }
+  .sum-row { display: flex; flex-wrap: wrap; gap: 1.2rem 2.5rem; margin-top: 1.2rem; }
+  .sum-row b { display: block; font-weight: 600; font-size: .95rem; margin-bottom: .45rem; }
+  .jny-top { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+  .big { font: 700 3rem/1 var(--head); letter-spacing: -.02em; }
+  .jny-top span:last-child { color: var(--muted); font-size: 1rem; text-align: right; }
+  .segs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .seg { height: 10px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+  .seg span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .4s ease-out; }
+  .nextup { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; margin-top: 1.25rem; padding: 1.2rem 1.5rem; border: 1px solid var(--accent); background: rgba(201, 162, 39, .07); border-radius: 16px; }
+  .nextup[hidden] { display: none; }
+  .nextup b { display: block; font: 700 1.3rem var(--head); }
+  .nextup span { color: var(--muted); font-size: 1rem; }
+  .obj { margin: 0; padding-left: 1.2rem; color: var(--muted); font-size: 1rem; } .obj li { margin-bottom: .25rem; }
+  .skills { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+  .sk { border: 1px solid var(--border); border-radius: 12px; background: var(--bg); transition: border-color .2s; }
+  .sk:hover, .sk[open] { border-color: var(--border-hi); }
+  .sk summary { display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 48px; padding: .6rem 1rem; cursor: pointer; font-weight: 600; list-style: none; }
+  .sk summary::-webkit-details-marker { display: none; }
+  .sk summary::after { content: "+"; color: var(--accent); font-size: 1.3rem; margin-left: auto; padding-left: .5rem; }
+  .sk[open] summary::after { content: "–"; }
+  .sk-state { font-size: .9rem; font-weight: 600; color: var(--muted); }
+  .sk.done { border-color: rgba(201, 162, 39, .5); } .sk.done .sk-state { color: var(--accent); }
+  .sk-body { padding: 0 1rem 1rem; }
+  .sk-body h5 { font: 600 .95rem var(--head); margin: 1rem 0 .35rem; color: var(--text); }
+  .sk-body ul { margin: 0; padding-left: 1.2rem; color: var(--muted); font-size: 1rem; }
+  .sk-meta { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
+  .mark { display: inline-flex; gap: .7rem; align-items: center; min-height: 44px; padding: .5rem .9rem; border: 1px solid var(--border-hi); border-radius: 10px; cursor: pointer; font-weight: 600; }
+  .mark:hover { border-color: var(--accent); }
+  .mark input { width: 20px; height: 20px; accent-color: var(--accent); }
+  .pcard { display: grid; gap: .6rem; padding: 1.2rem; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--border-hi); border-left: 4px solid var(--amber); }
+  .pcard .ptag { color: var(--amber); font-weight: 600; font-size: .95rem; }
+  .pcard b { font: 700 1.2rem var(--head); } .pcard p { margin: 0; color: var(--muted); font-size: 1rem; }
+  .res { display: grid; grid-template-columns: repeat(2, 1fr); gap: .7rem; }
+  .rc { padding: 1rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); }
+  .rc-top { display: flex; justify-content: space-between; gap: .5rem; margin-bottom: .4rem; font-size: .9rem; }
+  .rc-type { color: var(--accent); font-weight: 600; } .rc-lvl { color: var(--muted); }
+  .rc b { display: block; font-size: 1rem; margin-bottom: .2rem; } .rc p { font-size: .95rem !important; }
+  .res-note { font-size: .9rem !important; margin-top: .6rem !important; }
+  .st-foot { margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px solid var(--border); }
+  .st-card.flash { animation: flash .9s ease-out; }
+  @keyframes flash { 0% { box-shadow: 0 0 0 0 rgba(201, 162, 39, .55); } 100% { box-shadow: 0 0 0 18px rgba(201, 162, 39, 0); } }
+  .btn[disabled] { opacity: .6; cursor: default; transform: none; }
+  .toast { position: fixed; left: 50%; bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); opacity: 0; pointer-events: none; z-index: 90; background: var(--surface-2); border: 1px solid var(--accent); border-radius: 12px; padding: .8rem 1.2rem; font-weight: 600; font-size: 1rem; width: max-content; max-width: calc(100vw - 2rem); transition: opacity .25s, transform .25s; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  dialog { width: min(34rem, calc(100vw - 2rem)); background: var(--surface); color: var(--text); border: 1px solid var(--border-hi); border-radius: 18px; padding: 1.75rem; }
+  dialog::backdrop { background: rgba(4, 8, 16, .75); }
+  dialog h3 { font: 700 1.6rem/1.15 var(--head); margin: 0 0 .7rem; }
+  dialog p { color: var(--muted); margin: 0 0 1rem; }
+  dialog h4 { font: 600 1rem var(--head); margin: 1.1rem 0 .5rem; }
+  @media (max-width: 900px) { .rm-dash { grid-template-columns: 1fr; } }
+  @media (max-width: 720px) {
+    .res { grid-template-columns: 1fr; } .big { font-size: 2.4rem; }
+    .panel { padding: 1.2rem; } .nextup .btn, .st-foot .btn, dialog .btn { width: 100%; }
+    dialog { padding: 1.3rem; }
+  }
+
+  /* Milestone 6: visual identity */
+  .eyebrow { display: inline-flex; align-items: center; gap: .55rem; padding: .4rem .9rem; margin-bottom: 1.6rem; border: 1px solid var(--border-strong); border-radius: 99px; background: var(--surface); font: 600 .78rem var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--text-secondary); }
+  .eyebrow i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .hero { position: relative; overflow: hidden; background: radial-gradient(55% 50% at 50% 0%, rgba(201, 162, 39, .13), transparent 70%), radial-gradient(35% 40% at 85% 10%, rgba(90, 23, 40, .1), transparent 70%); }
+  .hero::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px); background-size: 56px 56px; opacity: .45; -webkit-mask-image: radial-gradient(70% 75% at 50% 0%, #000, transparent 75%); mask-image: radial-gradient(70% 75% at 50% 0%, #000, transparent 75%); pointer-events: none; }
+  .hero .container { position: relative; }
+  .hero h1 { letter-spacing: -.03em; }
+  .logo-mark { background: linear-gradient(135deg, var(--accent), var(--violet)); }
+  .btn-primary { box-shadow: 0 6px 20px rgba(201, 162, 39, .18); }
+  .j-steps::after { background: linear-gradient(90deg, var(--accent), var(--violet)); box-shadow: 0 0 8px rgba(201, 162, 39, .3); }
+  .j-step:last-child .j-node { border-color: var(--violet); color: var(--violet); }
+  .j-step:last-child .j-chip { border-color: var(--violet); }
+  .cat i.c-tech { background: var(--violet); } .cat i.c-health { background: #94a3b8; }
+  .card:hover { box-shadow: 0 14px 34px rgba(0, 0, 0, .35); }
+  .card[aria-pressed="true"] { box-shadow: 0 0 0 1px var(--accent), 0 14px 34px rgba(0, 0, 0, .35); }
+  .seg span { background: linear-gradient(90deg, var(--accent), var(--violet)); }
+  .st.current .st-card { box-shadow: 0 10px 30px rgba(0, 0, 0, .3); }
+  .st.done .st-node { background: var(--success); border-color: var(--success); color: var(--on-accent); }
+  .st.done::before { background: var(--success); }
+  .sk.done { border-color: rgba(90, 214, 160, .45); } .sk.done .sk-state { color: var(--success); }
+  .pill.ok { border-color: var(--success); color: var(--success); }
+  .pcard { border-left-color: var(--violet); } .pcard .ptag { color: var(--violet); }
+  .panel, .st-card, .card, dialog { box-shadow: 0 1px 0 rgba(255, 255, 255, .03) inset; }
+  dialog { box-shadow: 0 30px 80px rgba(0, 0, 0, .55); }
+  .lbl { color: var(--accent); }
+  .site-header { backdrop-filter: blur(8px); }
+
+  /* Milestone 7: remaining sections */
+  .info { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .steps, .why { list-style: none; margin: 2.5rem 0 0; padding: 0; display: grid; gap: 1.25rem; }
+  .steps { grid-template-columns: repeat(3, 1fr); } .why { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+  .steps li, .why li { padding: 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; }
+  .steps h3, .why h3 { font: 600 1.2rem var(--head); margin: 0 0 .4rem; } .steps p, .why p { margin: 0; color: var(--muted); font-size: 1rem; }
+  .num { display: grid; place-items: center; width: 40px; height: 40px; margin-bottom: 1rem; border-radius: 50%; border: 2px solid var(--accent); color: var(--accent); font: 700 1rem var(--head); }
+  .cta-wrap { padding: 2rem 0 6rem; }
+  .cta-box { text-align: center; padding: 3.5rem 1.5rem; border: 1px solid var(--border-strong); border-radius: 22px; background: radial-gradient(60% 90% at 50% 0%, rgba(201, 162, 39, .12), transparent 70%), var(--surface); }
+  .cta-box h2 { font: 700 clamp(1.8rem, 4vw, 2.6rem)/1.15 var(--head); margin: 0 0 .6rem; } .cta-box p { color: var(--muted); margin: 0 0 1.8rem; }
+  .footer { border-top: 1px solid var(--border); padding: 3rem 0 2rem; }
+  .foot-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 2rem; }
+  .footer p { color: var(--muted); font-size: 1rem; max-width: 22rem; margin: .8rem 0 0; }
+  .footer nav, .footer .foot-grid > div:last-child { display: flex; flex-direction: column; gap: .6rem; }
+  .footer nav a, .footer .foot-grid > div:last-child a { color: var(--muted); } .footer nav a:hover, .footer .foot-grid > div:last-child a:hover { color: var(--accent); }
+  .muted { color: var(--muted); font-size: 1rem; } .copy { margin-top: 2.5rem; color: var(--muted); font-size: .95rem; }
+  @media (max-width: 720px) { .steps, .foot-grid { grid-template-columns: 1fr; } .info { padding: 3.5rem 0; } .cta-wrap { padding-bottom: 4rem; } .cta-box .btn { width: 100%; } }
+
+  /* Milestone 8: Burgundy + Gold identity */
+  :root { font-variant-numeric: lining-nums; }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --background: #f7f2e8; --surface: #fffbf3; --surface-elevated: #efe5d3;
+    --text-primary: #2a0b14; --text-secondary: #6b4a52;
+    --accent: #86670e; --accent-hover: #a8841a; --accent-soft: rgba(134, 103, 14, .1); --on-accent: #fffaf0;
+    --violet: #5a1728; --border: #dccfb8; --border-strong: #c4b08c; --success: #86670e; --warning: #86670e; --nav-bg: rgba(247, 242, 232, .92);
+  }
+  /* In the light theme the hero, call-to-action and footer stay deep burgundy (burgundy surfaces) */
+  :root[data-theme="light"] :is(.hero, .cta-box, .footer) {
+    --background: #2a0b14; --bg: #2a0b14; --surface: #3d1523; --surface-elevated: #4e1d2e; --surface-2: #4e1d2e;
+    --text-primary: #f7f2e8; --text: #f7f2e8; --text-secondary: #d6c3bd; --muted: #d6c3bd;
+    --accent: #c9a227; --accent-hover: #e3c766; --on-accent: #2a0b14; --accent-soft: rgba(201, 162, 39, .14);
+    --border: #5a2536; --border-strong: #7a3a4c; --border-hi: #7a3a4c; --violet: #c45a76; --success: #e3c766;
+    color: var(--text);
+  }
+  body { background: radial-gradient(90% 45% at 50% 0%, rgba(90, 23, 40, .4), transparent 65%), var(--bg); background-repeat: no-repeat; }
+  :root[data-theme="light"] body { background: var(--bg); }
+  .theme-anim, .theme-anim *, .theme-anim *::before, .theme-anim *::after { transition: background-color .35s, color .35s, border-color .35s, fill .35s !important; }
+
+  /* Navigation: smaller and quieter */
+  .nav { height: 4rem; } .nav-links a { font-size: .95rem; } .nav-links { gap: 1.75rem; }
+  .nav-right { display: flex; align-items: center; gap: .75rem; }
+  .nav-menu { order: 0; } .theme-toggle { order: 1; } .menu-toggle { order: 2; }
+  .theme-toggle { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; background: transparent; border: 1px solid var(--border-strong); color: var(--text); cursor: pointer; transition: border-color .2s, color .2s; }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .theme-toggle svg { width: 20px; height: 20px; }
+  :root[data-theme="light"] .i-sun, :root:not([data-theme="light"]) .i-moon { display: none; }
+  .logo-mark { background: linear-gradient(135deg, var(--accent), var(--accent-hover)); }
+  .logo-mark svg { stroke: #2a0b14; }
+  :root[data-theme="light"] .site-header .logo-mark { background: var(--violet); } :root[data-theme="light"] .site-header .logo-mark svg { stroke: #e3c766; }
+  .btn { transition: background .25s, border-color .25s, transform .25s, box-shadow .25s; }
+  .btn-primary { box-shadow: 0 6px 18px rgba(201, 162, 39, .16); }
+
+  /* Typography: editorial serif headings, plain sans body */
+  .hero h1 { font-size: clamp(2.4rem, 5vw, 3.9rem); line-height: 1.1; letter-spacing: -.01em; font-weight: 700; }
+  .section-head h2, .rm-top h2, .cta-box h2 { letter-spacing: -.005em; font-weight: 600; }
+  .st-title, .ctitle, .panel h3, .nextup b, dialog h3 { letter-spacing: 0; font-weight: 600; }
+  .lbl { font-weight: 700; letter-spacing: .02em; }
+
+  /* Hero: burgundy depth with a hint of gold */
+  .hero { background: radial-gradient(70% 70% at 50% -10%, rgba(122, 32, 56, .75), transparent 70%), radial-gradient(30% 35% at 88% 8%, rgba(201, 162, 39, .1), transparent 70%); }
+  :root[data-theme="light"] .hero { background: radial-gradient(60% 70% at 50% -10%, #6e1d33, transparent 72%), radial-gradient(30% 35% at 88% 8%, rgba(201, 162, 39, .14), transparent 70%), #2a0b14; }
+  .hero::before { opacity: .22; }
+  .j-steps::after, .seg span { background: linear-gradient(90deg, var(--accent), var(--accent-hover)); box-shadow: none; }
+  .j-step:last-child .j-node { border-color: var(--accent-hover); color: var(--accent-hover); } .j-step:last-child .j-chip { border-color: var(--border-strong); }
+
+  /* Career cards with line icons */
+  .chead { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; } .chead .cat { margin: 0; }
+  .cicon { display: grid; place-items: center; flex: none; width: 46px; height: 46px; border-radius: 12px; border: 1px solid var(--border-strong); background: var(--surface-elevated); color: var(--accent); transition: border-color .25s, background .25s; }
+  .cicon svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .card:hover .cicon, .card[aria-pressed="true"] .cicon { border-color: var(--accent); background: var(--accent-soft); }
+  .card:hover { transform: translateY(-3px); }
+  .cat i, .cat i.c-tech, .cat i.c-design, .cat i.c-health { background: var(--accent); } .cat i.c-tech { background: var(--violet); } .cat i.c-health { background: var(--text-secondary); }
+  :root[data-theme="light"] .card:hover { box-shadow: 0 14px 30px rgba(90, 23, 40, .12); }
+  :root[data-theme="light"] .card[aria-pressed="true"] { box-shadow: 0 0 0 1px var(--accent), 0 14px 30px rgba(90, 23, 40, .14); }
+  .fchip[aria-pressed="true"], .btn-primary { color: var(--on-accent); }
+  .search input:focus { box-shadow: 0 0 0 3px var(--accent-soft); }
+  :root[data-theme="light"] :is(.panel, .st-card, .steps li, .why li, .rc, .sk) { box-shadow: 0 1px 2px rgba(90, 23, 40, .06); }
+  :root[data-theme="light"] .sk { background: var(--background); }
+  .pcard { border-left-color: var(--accent); } .pcard .ptag { color: var(--accent); }
+  .footer { background: var(--surface); }
+  @media (max-width: 960px) { .nav-menu { order: 0; } .nav-right { gap: .6rem; } }
+</style>
+</head>
+
+<!-- ============ HTML (the content) ============ -->
+<body>
+  <a class="skip" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <div class="container nav">
+      <a href="#home" class="logo" aria-label="CareerPath AI home">
+        <span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#2a0b14" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-5 4-4 7-7s2-6 7-7"/><circle cx="5" cy="19" r="1.2"/></svg></span>
+        CareerPath AI
+      </a>
+      <div class="nav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light theme">
+        <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/></svg>
+        <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z"/></svg>
+      </button>
+      <button class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="navMenu" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <nav class="nav-menu" id="navMenu" aria-label="Main">
+        <ul class="nav-links">
+          <li><a href="#home" aria-current="page">Home</a></li>
+          <li><a href="#careers">Explore Careers</a></li>
+          <li><a href="#how-it-works">How It Works</a></li>
+          <li><a href="#about">About</a></li>
+        </ul>
+        <a href="#careers" class="btn btn-primary nav-cta">Get Started</a>
+      </nav>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="home">
+      <div class="container">
+        <div class="hero-copy">
+          <span class="eyebrow"><i></i>AI-powered career guidance</span>
+          <h1>Build the career you're meant for.</h1>
+          <p class="hero-text">CareerPath AI helps students discover careers and follow personalized learning roadmaps, from first skill to first job.</p>
+          <div class="hero-actions">
+            <a href="#careers" class="btn btn-primary">Explore Career Paths →</a>
+            <a href="#how-it-works" class="btn btn-ghost">See How It Works</a>
+          </div>
+        </div>
+
+        <div class="journey" role="img" aria-label="Career journey in five steps: Interest, Skills, Projects, Experience, Career">
+          <ol class="j-steps">
+            <li class="j-step done"><span class="j-node">1</span><b>Interest</b><small>Pick a direction</small><span class="j-chip">Data Science</span></li>
+            <li class="j-step done"><span class="j-node">2</span><b>Skills</b><small>Learn the core tools</small><span class="j-chip">Python</span></li>
+            <li class="j-step active"><span class="j-node">3</span><b>Projects</b><small>Prove it with real work</small><span class="j-chip">Portfolio</span></li>
+            <li class="j-step"><span class="j-node">4</span><b>Experience</b><small>Learn on the job</small><span class="j-chip">Internship</span></li>
+            <li class="j-step"><span class="j-node">5</span><b>Career</b><small>Step in, job-ready</small><span class="j-chip">First role</span></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="careers" id="careers">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2>Where could your curiosity take you?</h2>
+          <p>Choose a direction. We'll map the skills that can take you there.</p>
+        </div>
+
+        <div class="tools reveal">
+          <div class="search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <input id="searchInput" type="search" placeholder="Search a career — e.g. Data Scientist" aria-label="Search careers" autocomplete="off">
+          </div>
+          <div class="filters" id="filters" role="group" aria-label="Filter by category">
+            <button class="fchip" type="button" aria-pressed="true" data-cat="All">All</button>
+            <button class="fchip" type="button" aria-pressed="false" data-cat="AI & Data">AI &amp; Data</button>
+            <button class="fchip" type="button" aria-pressed="false" data-cat="Technology">Technology</button>
+            <button class="fchip" type="button" aria-pressed="false" data-cat="Design">Design</button>
+            <button class="fchip" type="button" aria-pressed="false" data-cat="Healthcare">Healthcare</button>
+          </div>
+        </div>
+
+        <div class="grid" id="grid"></div>
+
+        <div class="empty" id="empty" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5M8.5 11h5"/></svg>
+          <h3>No path found</h3>
+          <p>Try searching for another career.</p>
+        </div>
+
+        <div class="selection" id="selection" hidden aria-live="polite">
+          <p id="selectionText"></p>
+          <button class="linkbtn" id="clearBtn" type="button">Clear selection</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="roadmap" id="roadmap" hidden>
+      <div class="container">
+        <div class="rm-top">
+          <div>
+            <h2 id="rmTitle" tabindex="-1"></h2>
+            <p>Follow the roadmap from fundamentals to real-world projects and career preparation.</p>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="changeBtn" type="button">Change career</button>
+        </div>
+        <div class="rm-dash">
+          <div class="panel">
+            <p class="lbl">Career summary</p>
+            <h3 id="sumName"></h3>
+            <p id="sumOv"></p>
+            <div class="sum-row"><div><b>Typical skills</b><div class="tags" id="sumSk" style="margin:0"></div></div><div><b>Roadmap</b><p>About 5 stages</p></div></div>
+          </div>
+          <div class="panel" aria-live="polite">
+            <p class="lbl">Your journey</p>
+            <div class="jny-top"><span class="big" id="rmPct"></span><span id="rmStage"></span></div>
+            <div class="segs" id="rmSegs" role="progressbar" aria-label="Roadmap progress" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </div>
+        <div class="nextup" id="nextUp">
+          <div><p class="lbl" style="margin-bottom:.2rem!important">Next up</p><b id="nxTitle"></b><span id="nxTime"></span></div>
+          <button class="btn btn-primary" id="nxBtn" type="button">Continue Learning →</button>
+        </div>
+        <ol class="tl" id="timeline"></ol>
+      </div>
+    </section>
+
+    <section class="info" id="how-it-works">
+      <div class="container">
+        <div class="section-head reveal"><h2>How it works</h2><p>Three steps from curious to confident.</p></div>
+        <ol class="steps reveal">
+          <li><span class="num">1</span><h3>Choose your interest</h3><p>Select the career you are interested in.</p></li>
+          <li><span class="num">2</span><h3>Get your roadmap</h3><p>See the skills and technologies you should learn.</p></li>
+          <li><span class="num">3</span><h3>Start learning</h3><p>Follow the roadmap step by step and build projects.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="info" id="about">
+      <div class="container">
+        <div class="section-head reveal"><h2>Why CareerPath AI?</h2><p>A clear plan beats a long list of courses.</p></div>
+        <ul class="why reveal">
+          <li><h3>Structured learning path</h3><p>Every career is broken into five clear stages.</p></li>
+          <li><h3>Beginner-friendly progression</h3><p>Start from the basics and build up at your own pace.</p></li>
+          <li><h3>Skill-based guidance</h3><p>See exactly what to learn, and why it matters.</p></li>
+          <li><h3>Project recommendations</h3><p>Every stage includes a practical project to build.</p></li>
+          <li><h3>Career-focused learning</h3><p>Finish with a portfolio and interview preparation.</p></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="cta-wrap">
+      <div class="container">
+        <div class="cta-box reveal">
+          <h2>Not sure where to start?</h2>
+          <p>Choose a career and discover your path today.</p>
+          <a href="#careers" class="btn btn-primary">Explore Career Paths →</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container foot-grid">
+      <div>
+        <a href="#home" class="logo" aria-label="CareerPath AI home"><span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#2a0b14" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-5 4-4 7-7s2-6 7-7"/><circle cx="5" cy="19" r="1.2"/></svg></span>CareerPath AI</a>
+        <p>Structured learning roadmaps that take students from beginner to job-ready.</p>
+      </div>
+      <nav aria-label="Footer"><a href="#home">Home</a><a href="#careers">Explore Careers</a><a href="#how-it-works">How It Works</a><a href="#about">About</a></nav>
+      <div><a href="mailto:hello@careerpath.example">Email us</a><span class="muted">Social links coming soon</span></div>
+    </div>
+    <div class="container copy">© 2026 CareerPath AI. A student project prototype.</div>
+  </footer>
+
+  <dialog id="projDialog" aria-labelledby="pdTitle"></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- ============ JavaScript (the behavior) ============ -->
+  <script>
+    // Mobile menu
+    var toggle = document.getElementById("menuToggle"), menu = document.getElementById("navMenu");
+    function setMenu(open) {
+      menu.classList.toggle("open", open);
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    }
+    toggle.addEventListener("click", function () { setMenu(!menu.classList.contains("open")); });
+    menu.addEventListener("click", function (e) { if (e.target.closest("a")) setMenu(false); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") setMenu(false); });
+
+    var ICON = function (d) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + d + '</svg>'; };
+    var ICONS = {
+      "AI Engineer": ICON('<rect x="7" y="7" width="10" height="10" rx="2"/><path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4"/>'),
+      "Data Scientist": ICON('<path d="M4 20V4M4 20h16"/><path d="M8 16v-4M12 16V8M16 16v-6"/>'),
+      "Machine Learning Engineer": ICON('<circle cx="5" cy="6" r="1.8"/><circle cx="5" cy="18" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="6" r="1.8"/><circle cx="19" cy="18" r="1.8"/><path d="M6.6 7l4 4M6.6 17l4-4M13.4 11l4-4M13.4 13l4 4"/>'),
+      "Web Developer": ICON('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9.5 13.5l-2 2 2 2M14.5 13.5l2 2-2 2"/>'),
+      "Cybersecurity Analyst": ICON('<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/>'),
+      "UI/UX Designer": ICON('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M10 10v10"/>'),
+      "Biomedical Engineer": ICON('<path d="M3 12h4l2-5 4 10 2-5h6"/>'),
+      "MBBS / Medical Doctor": ICON('<path d="M6 3v6a4 4 0 008 0V3"/><path d="M10 13v2a4 4 0 008 0v-1"/><circle cx="18" cy="12" r="2"/>')
+    };
+    // Sample career data (static, no server)
+    var careers = [
+      { t: "AI Engineer", c: "AI & Data", d: "Design and ship systems that learn, reason and act.", s: ["Python", "LLMs", "MLOps"] },
+      { t: "Data Scientist", c: "AI & Data", d: "Turn raw data into decisions people can trust.", s: ["Statistics", "Pandas", "SQL"] },
+      { t: "Machine Learning Engineer", c: "AI & Data", d: "Train, tune and deploy models at production scale.", s: ["Scikit-learn", "PyTorch", "Evaluation"] },
+      { t: "Web Developer", c: "Technology", d: "Build fast, accessible products people use every day.", s: ["HTML & CSS", "JavaScript", "React"] },
+      { t: "Cybersecurity Analyst", c: "Technology", d: "Find weaknesses before attackers do.", s: ["Networking", "Linux", "Threat Analysis"] },
+      { t: "UI/UX Designer", c: "Design", d: "Shape how products look, feel and flow.", s: ["Figma", "User Research", "Prototyping"] },
+      { t: "Biomedical Engineer", c: "Healthcare", d: "Apply engineering to medical devices and diagnostics.", s: ["Biology", "Signal Processing", "Devices"] },
+      { t: "MBBS / Medical Doctor", c: "Healthcare", d: "Diagnose, treat and care for patients across medical specialities.", s: ["Anatomy", "Pharmacology", "Clinical Skills"] }
+    ];
+    var dotClass = { "AI & Data": "", "Technology": "c-tech", "Design": "c-design", "Healthcare": "c-health" };
+    var grid = document.getElementById("grid"), empty = document.getElementById("empty");
+    var selection = document.getElementById("selection"), selText = document.getElementById("selectionText");
+    var search = document.getElementById("searchInput");
+    var category = "All", selected = null;
+
+    careers.forEach(function (x) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "card"; b.setAttribute("aria-pressed", "false");
+      b.innerHTML = '<span class="chead"><span class="cat"><i class="' + dotClass[x.c] + '"></i>' + x.c + '</span><span class="cicon">' + ICONS[x.t] + '</span></span>' +
+        '<span class="ctitle">' + x.t + '</span><span class="cdesc">' + x.d + '</span>' +
+        '<span class="tags">' + x.s.map(function (s) { return '<span class="tag">' + s + '</span>'; }).join("") + '</span>' +
+        '<span class="explore"><span class="label">Explore path</span> <span class="arrow">→</span></span>';
+      b.addEventListener("click", function () { select(x.t); });
+      x.el = b; grid.appendChild(b);
+    });
+
+    function select(title) {
+      selected = title;
+      careers.forEach(function (x) {
+        var on = x.t === selected;
+        x.el.setAttribute("aria-pressed", String(on));
+        x.el.querySelector(".label").textContent = on ? "Selected path" : "Explore path";
+      });
+      selection.hidden = !selected;
+      renderRoadmap(selected);
+      if (selected) selText.textContent = "You selected " + selected + ". Your roadmap is ready below.";
+    }
+    document.getElementById("clearBtn").addEventListener("click", function () { select(null); });
+
+    function applyFilters() {
+      var q = search.value.trim().toLowerCase(), shown = 0;
+      careers.forEach(function (x) {
+        var text = (x.t + " " + x.c + " " + x.s.join(" ")).toLowerCase();
+        var ok = (category === "All" || x.c === category) && text.indexOf(q) !== -1;
+        x.el.hidden = !ok;
+        x.el.classList.toggle("lead", ok && shown === 0);
+        if (ok) shown++;
+      });
+      empty.hidden = shown > 0;
+    }
+    search.addEventListener("input", applyFilters);
+    document.getElementById("filters").addEventListener("click", function (e) {
+      var chip = e.target.closest(".fchip"); if (!chip) return;
+      category = chip.getAttribute("data-cat");
+      document.querySelectorAll(".fchip").forEach(function (c) { c.setAttribute("aria-pressed", String(c === chip)); });
+      applyFilters();
+    });
+    applyFilters();
+
+    // Reveal sections as they scroll into view
+    var items = document.querySelectorAll(".reveal");
+    if ("IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); } });
+      }, { threshold: 0.15 });
+      items.forEach(function (el) { io.observe(el); });
+    } else { items.forEach(function (el) { el.classList.add("in"); }); }
+  
+    // ===== Roadmap (Milestones 4 and 5) =====
+    // Static sample data. Format per career: o overview, ts typical skills, ob foundation goals,
+    // s = 4 stages of "Skill|topic, topic", pr = 4 projects "Name|description". A backend could return this same shape.
+    var PREP = ["Portfolio|Pick your best work, write clear case studies, publish it online", "Resume|One page, results-focused, tailored to the role", "Interview Preparation|Practise common questions, explain your projects aloud", "Internship / Job Search|Find roles, tailor applications, track responses"];
+    var PROJ5 = "Launch your portfolio|Publish your best work with clear write-ups and ask five people for feedback.";
+    var stageInfo = [
+      { n: "Foundations", e: "Build the fundamental knowledge you need before moving forward.", t: "4–6 weeks", w: "Everything later builds on these basics, so gaps here slow you down everywhere else." },
+      { n: "Core Skills", e: "Learn the everyday tools professionals use.", t: "6–8 weeks", w: "These are the skills employers look for first in applications and interviews." },
+      { n: "Advanced Skills", e: "Go deeper and specialise in what sets you apart.", t: "8–12 weeks", w: "Depth is what moves you from learner to someone a team trusts with real problems." },
+      { n: "Projects", e: "Apply everything by building work you can show.", t: "6–10 weeks", w: "Projects prove your ability better than a certificate can." },
+      { n: "Career Ready", e: "Package your work and start applying.", t: "3–4 weeks", w: "Strong preparation turns skills into interviews and offers." }
+    ];
+    var SKT = ["1–2 weeks", "2 weeks", "2–3 weeks", "2–4 weeks", "1 week"], PT = ["1–2 weeks", "2 weeks", "2–3 weeks", "4–6 weeks", "1–2 weeks"];
+    var DIFF = ["Beginner", "Beginner", "Intermediate", "Advanced", "Intermediate"], PD = ["Beginner", "Beginner", "Intermediate", "Advanced", "Beginner"];
+    var roadmaps = {
+      "AI Engineer": { o: "Build and ship software that uses machine learning and language models to solve real problems.", ts: ["Python", "Machine Learning", "LLMs", "Deployment"],
+        ob: ["Write Python programs that call APIs", "Explain vectors and matrices in plain language", "Use Git to track and share your work"],
+        s: [["Python|Variables and functions, data structures, files and libraries", "Linear Algebra|Vectors, matrices, dot products", "Git & APIs|Commits and branches, REST basics, JSON"],
+          ["Machine Learning Basics|Regression, classification, train and test splits", "Neural Networks|Layers, loss functions, the idea of backpropagation", "LLM Fundamentals|Tokens, prompts, how language models respond"],
+          ["Retrieval-Augmented Generation|Embeddings, vector search, grounding answers", "Fine-tuning|Datasets, training runs, evaluation", "Model Deployment|Serving models, latency, monitoring"],
+          ["Document Q&A assistant|Ingest files, retrieve passages, answer with sources", "Image classifier app|Train, evaluate, wrap in a simple interface", "Capstone: AI-powered product|Pick a real user problem and ship an end-to-end solution"]],
+        pr: ["Automate a small task with Python|Write a script that renames files or cleans a spreadsheet automatically.", "Train a basic neural network|Train a small network on a public dataset and plot its accuracy.", "Ship a chatbot|Build a simple chatbot that answers questions from a short document.", "Capstone: AI-powered product|Combine your skills into one deployed product with a short demo video."] },
+      "Data Scientist": { o: "Use data, statistics and machine learning to discover insights and support intelligent decisions.", ts: ["Python", "Statistics", "SQL", "Machine Learning"],
+        ob: ["Write basic Python programs", "Work with basic statistics", "Understand data structures"],
+        s: [["Python|Variables and loops, functions, lists and dictionaries", "Mathematics|Algebra review, functions, basic calculus", "Statistics|Mean and spread, probability, distributions"],
+          ["NumPy|Arrays, vector operations, random numbers", "Pandas|DataFrames, cleaning, grouping", "SQL|SELECT and WHERE, joins, aggregation", "Data Visualization|Choosing charts, Matplotlib, clear labels"],
+          ["Machine Learning|Regression, classification, clustering", "Feature Engineering|Encoding, scaling, selecting features", "Model Evaluation|Accuracy and recall, cross-validation, overfitting"],
+          ["Exploratory analysis|Clean data, ask questions, chart the findings", "Prediction model|Choose features, train, compare models", "Capstone: end-to-end analysis|From question to data to model to written story"]],
+        pr: ["Build a basic data analysis project|Load a public dataset, clean it and summarise three findings with charts.", "Create an insights dashboard|Combine SQL queries and charts to answer a business question.", "Predict an outcome with real data|Train and compare two models and explain which one you trust.", "Capstone: end-to-end analysis|Answer a question of your choice from raw data to final report."] },
+      "Machine Learning Engineer": { o: "Train, evaluate and deploy machine learning models that run reliably in production.", ts: ["Python", "PyTorch", "MLOps", "Model Serving"],
+        ob: ["Write clean Python for data tasks", "Explain gradients using calculus basics", "Describe probability for model outputs"],
+        s: [["Python|Functions and classes, virtual environments, testing basics", "Calculus & Linear Algebra|Derivatives, gradients, matrix operations", "Probability|Distributions, Bayes idea, expectation"],
+          ["Scikit-learn|Pipelines, models, metrics", "Data Pipelines|Loading, cleaning, splitting data", "Model Evaluation|Validation, bias and variance, error analysis"],
+          ["PyTorch|Tensors, autograd, training loops", "MLOps|Experiment tracking, versioning, automation", "Model Serving|APIs, containers, monitoring"],
+          ["Tabular model|Features, training, tuning", "Computer vision model|Images, augmentation, fine-tuning", "Capstone: deployed ML service|Train a model and serve it behind an API"]],
+        pr: ["Implement linear regression from scratch|Write gradient descent yourself and compare it with a library.", "Build a reusable training pipeline|Turn a notebook into a script with configurable settings.", "Deploy a model behind an API|Serve a trained model and test it with sample requests.", "Capstone: deployed ML service|Train, package and serve a model, with monitoring notes."] },
+      "Web Developer": { o: "Design and build fast, accessible websites and web applications people enjoy using.", ts: ["HTML & CSS", "JavaScript", "React", "Databases"],
+        ob: ["Structure a page with semantic HTML", "Style a responsive layout with CSS", "Write simple JavaScript interactions"],
+        s: [["HTML|Semantic elements, forms, links and images", "CSS|Box model, flexbox, grid", "JavaScript|Variables, functions, DOM events"],
+          ["Responsive Design|Breakpoints, fluid layouts, mobile first", "Git & GitHub|Commits, branches, pull requests", "Accessibility|Contrast, keyboard use, ARIA basics"],
+          ["React|Components, state, props", "APIs|Fetching data, JSON, error handling", "Databases|Tables, queries, saving user data"],
+          ["Personal website|Plan, build and launch a site about you", "Interactive app|State, saved data, polished interface", "Capstone: full-stack product|Front end, back end and database working together"]],
+        pr: ["Build a multi-section page|Recreate a modern landing page using only HTML and CSS.", "Build a to-do app|Add, complete and delete tasks that are saved in the browser.", "Launch a data-driven app|Ship an app whose data is stored in a database.", "Capstone: full-stack product|Design, build and publish a complete product with a short case study."] },
+      "Cybersecurity Analyst": { o: "Protect systems and data by finding weaknesses, detecting threats and responding to incidents.", ts: ["Networking", "Linux", "Threat Detection", "Incident Response"],
+        ob: ["Explain how data moves across a network", "Use the Linux command line", "Describe common attack types"],
+        s: [["Networking|IP and DNS, ports, protocols", "Linux|Command line, permissions, processes", "Operating Systems|Users, services, logs"],
+          ["Security Fundamentals|Confidentiality and integrity, authentication, risk", "Cryptography|Hashing, encryption, certificates", "Vulnerability Scanning|Scanners, severity scores, reporting"],
+          ["Threat Detection|Log analysis, alerts, indicators", "Incident Response|Triage, containment, recovery", "Ethical Hacking|Reconnaissance, safe testing, rules of engagement"],
+          ["Home security lab|Virtual machines, a small network, monitoring", "Vulnerability report|Find, rate and explain weaknesses clearly", "Capstone: simulated incident response|Detect, contain and document a staged attack"]],
+        pr: ["Map and document a home network|List devices, open ports and risks in a simple diagram.", "Scan a test system|Run a scan in a safe lab and write up the findings.", "Investigate a simulated attack|Read logs from a practice scenario and build a timeline.", "Capstone: simulated incident response|Handle a full scenario and write the incident report."] },
+      "UI/UX Designer": { o: "Research user needs and design products that are clear, useful and enjoyable to use.", ts: ["Figma", "User Research", "Prototyping", "Usability Testing"],
+        ob: ["Explain core design principles", "Choose readable type and colour", "Describe how users think and decide"],
+        s: [["Design Principles|Hierarchy, spacing, consistency", "Typography & Color|Type scales, contrast, palettes", "User Psychology|Attention, memory, decision making"],
+          ["Figma|Frames, components, auto layout", "User Research|Interviews, surveys, personas", "Wireframing|User flows, low-fidelity screens, feedback"],
+          ["Prototyping|Interactions, transitions, flows", "Usability Testing|Test plans, observation, findings", "Design Systems|Tokens, components, documentation"],
+          ["App redesign|Pick an app and improve one flow", "Case study|Tell the story of problem, process and result", "Capstone: end-to-end product design|From research to a tested prototype"]],
+        pr: ["Redesign one screen|Improve a screen from an app you use and explain every change.", "Interview five users|Ask about a real problem and summarise the patterns you find.", "Test a prototype|Run a short usability test and iterate on what you learn.", "Capstone: end-to-end product design|Take one idea from research to a tested prototype and case study."],
+        prep: ["Portfolio|Choose three strong projects and present each clearly", "Case Study Writing|Structure stories around problem, process and impact", "Resume|One page, results-focused, tailored to the role", "Interview Preparation|Practise walking through your design decisions"] },
+      "Biomedical Engineer": { o: "Apply engineering to medicine by designing devices, sensors and analysis tools that improve health care.", ts: ["Anatomy", "Instrumentation", "Signal Processing", "Medical Imaging"],
+        ob: ["Understand basic human anatomy", "Explain common physiological signals", "Apply basic engineering mathematics to biomedical problems"],
+        s: [["Human Anatomy|Major organ systems, body structure, medical terms", "Physiology|Heart and nerves, how organs work, vital signs", "Engineering Mathematics|Linear algebra basics, calculus fundamentals, probability basics, statistics fundamentals"],
+          ["Biomedical Instrumentation|Measurement basics, amplifiers, safety standards", "Sensors|Sensor types, calibration, noise", "Signal Processing|Filtering, Fourier transform, sampling"],
+          ["Medical Imaging|X-ray and MRI, CT, image processing", "Biomechanics|Forces in the body, motion analysis, implants", "Biomedical Data Analysis|Clinical datasets, statistics, privacy basics"],
+          ["ECG Signal Analysis|Load a sample ECG, filter noise, find heartbeats", "Patient Monitoring Prototype|Sensor, microcontroller, display", "Medical Imaging Project|Enhance or segment a sample image"]],
+        pr: ["Analyze an ECG Signal|Use a sample ECG dataset to visualize and identify basic patterns in a physiological signal.", "Read and clean a sensor signal|Record a signal, remove noise and plot the result.", "Analyse a medical image dataset|Apply simple processing to a sample set and report what you see.", "Capstone: Patient Monitoring Prototype|Build a small monitor that reads, filters and displays a vital sign."],
+        prep: ["Research|Find labs, read papers, contact researchers", "Internships|Look for hospital, lab and device-company placements", "Medical Device Industry|Regulation basics, typical roles, companies to follow", "Portfolio|Present your signal and device projects clearly"] }
+    };
+    roadmaps["MBBS / Medical Doctor"] = { o: "Train to diagnose and treat patients, combining scientific knowledge with hands-on clinical practice.", ts: ["Anatomy", "Pharmacology", "Clinical Skills", "Patient Care"],
+      ob: ["Describe the major systems of the human body", "Explain core chemistry and physics used in medicine", "Use medical terminology accurately"],
+      s: [["Biology|Cell structure, genetics, human systems", "Chemistry|Organic chemistry, reactions, biomolecules", "Physics|Mechanics, optics, radiation basics", "Human Anatomy|Regional anatomy, organ systems, dissection basics"],
+        ["Physiology|Cardiovascular, respiratory and nervous systems", "Biochemistry|Metabolism, enzymes, molecular basis of disease", "Pathology|Cell injury, inflammation, disease mechanisms", "Pharmacology|Drug action, dosing, adverse effects"],
+        ["Medicine|History taking, examination, common conditions", "Surgery|Surgical principles, wound care, post-operative care", "Pediatrics|Growth, vaccination, childhood illnesses", "Obstetrics & Gynecology|Antenatal care, labour, women's health"],
+        ["Patient case study|History, findings, diagnosis and plan", "Community health project|Plan and run a health awareness activity", "Research mini-project|Review evidence on a clinical question"]],
+      pr: ["Map the major body systems|Build a one-page reference linking each system's organs and functions.", "Prepare a drug reference sheet|Summarise ten common drugs: action, use, dose range and side effects.", "Present a clinical case|Prepare a structured case presentation from a practice scenario.", "Capstone: community health project|Plan, deliver and reflect on a health awareness activity."],
+      prep: ["Clinical Internship|Rotate through departments and practise under supervision", "Medical Practice|Build patient communication, ethics and record-keeping habits", "Postgraduate Specialization|Compare specialities and plan entrance exam preparation", "Portfolio|Keep a log of cases, procedures and reflections"] };
+    var RES = [["Documentation", "Reference notes you can search when you are stuck."], ["Course", "A structured video lesson sequence with exercises."], ["Guide", "A step-by-step walkthrough with worked examples."], ["Practice", "Short exercises to test what you have learned."]];
+    var rmSection = document.getElementById("roadmap"), tl = document.getElementById("timeline");
+    var dlg = document.getElementById("projDialog"), toastEl = document.getElementById("toast"), toastT;
+    var current = null, openIdx = 0, progress = {}, projects = [];
+    try { progress = JSON.parse(localStorage.getItem("cp-progress") || "{}"); } catch (e) { progress = {}; }
+    function save() { try { localStorage.setItem("cp-progress", JSON.stringify(progress)); } catch (e) {} }
+    function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+    function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+    function parse(x) { var a = x.split("|"); return { n: a[0], t: a[1] }; }
+
+    function stageData(r, title, i) {
+      var items = (i === 4 ? (r.prep || PREP) : r.s[i]).map(parse), names = items.map(function (x) { return x.n; });
+      var obj = i === 0 ? r.ob : i === 3 ? ["Plan and finish a project from start to end", "Document your work so others can follow it", "Explain your choices clearly in an interview"] :
+        i === 4 ? ["Present your best work with confidence", "Tailor your resume to a specific role", "Answer common interview questions clearly"] :
+        ["Explain the key ideas behind " + names[0], "Apply " + names[1] + " in a small practical task", "Combine " + names[2] + " with your earlier skills"];
+      var pj = parse(i === 4 ? PROJ5 : r.pr[i]);
+      var sp = i === 4 ? ["Portfolio", "Writing", "Presenting"] : (i === 3 ? r.s[1] : r.s[i]).map(function (x) { return parse(x).n; }).slice(0, 3);
+      return { items: items, obj: obj, proj: { n: pj.n, d: pj.t, df: PD[i], t: PT[i], sp: sp } };
+    }
+
+    function renderRoadmap(title) {
+      current = title;
+      if (!title) { rmSection.hidden = true; return; }
+      var r = roadmaps[title], mine = progress[title] || {};
+      document.getElementById("rmTitle").textContent = "Your path to becoming " + (/^([AEIOU]|MBBS)/.test(title) ? "an " : "a ") + title;
+      document.getElementById("sumName").textContent = title;
+      document.getElementById("sumOv").textContent = r.o;
+      document.getElementById("sumSk").innerHTML = r.ts.map(function (s) { return '<span class="tag">' + esc(s) + '</span>'; }).join("");
+      document.getElementById("rmSegs").innerHTML = '<div class="seg"><span></span></div>'.repeat(5);
+      projects = [];
+      tl.innerHTML = "";
+      stageInfo.forEach(function (st, i) {
+        var d = stageData(r, title, i); projects.push(d.proj);
+        var li = document.createElement("li"); li.className = "st"; li.dataset.i = i;
+        li.innerHTML = '<span class="st-node"></span><div class="st-card">' +
+          '<h3 class="st-title">' + st.n + '</h3><p class="st-expl">' + st.e + '</p>' +
+          '<div class="st-meta"><span class="pill">' + st.t + '</span><span class="pill count"></span></div>' +
+          '<p class="st-proj"><b>Project:</b> <span>' + esc(d.proj.n) + '</span></p>' +
+          '<button class="st-btn" type="button" aria-expanded="false" aria-controls="b' + i + '">View Stage <span class="arrow">→</span></button>' +
+          '<div class="st-body" id="b' + i + '"><div class="st-inner"><div>' +
+          '<h4>By the end of this stage, you should be able to...</h4><ul class="obj">' + d.obj.map(function (o) { return '<li>' + esc(o) + '</li>'; }).join("") + '</ul>' +
+          '<h4>Skills</h4><ul class="skills">' + d.items.map(function (it, k) {
+            var key = i + ":" + k;
+            return '<li><details class="sk" data-time="' + SKT[i] + '"><summary><span class="sk-name">' + esc(it.n) + '</span><span class="sk-state"></span></summary><div class="sk-body">' +
+              '<h5>What to learn</h5><ul>' + it.t.split(", ").map(function (t) { return '<li>' + esc(cap(t)) + '</li>'; }).join("") + '</ul>' +
+              '<h5>Why it matters</h5><p>' + esc(it.n) + ' supports the ' + st.n.toLowerCase() + ' stage of your ' + esc(title) + ' path. ' + st.w + '</p>' +
+              '<div class="sk-meta"><span class="pill">' + SKT[i] + '</span><span class="pill">' + DIFF[i] + '</span></div>' +
+              '<label class="mark"><input type="checkbox" data-key="' + key + '"' + (mine[key] ? " checked" : "") + '><span>Mark as complete</span></label></div></details></li>'; }).join("") + '</ul>' +
+          '<h4>Project</h4><div class="pcard"><span class="ptag">Project</span><b>' + esc(d.proj.n) + '</b><p>' + esc(d.proj.d) + '</p>' +
+          '<div class="sk-meta" style="margin:0"><span class="pill">' + d.proj.df + '</span><span class="pill">' + d.proj.t + '</span></div>' +
+          '<div class="tags" style="margin:0">' + d.proj.sp.map(function (s) { return '<span class="tag">' + esc(s) + '</span>'; }).join("") + '</div>' +
+          '<button class="st-btn proj-btn" type="button" data-i="' + i + '">View Project →</button></div>' +
+          '<h4>Suggested resources</h4><div class="res">' + RES.map(function (rs, k) {
+            var nm = d.items[k === 3 ? 0 : k].n, lab = ["reference notes", "video course", "step-by-step guide", "practice exercises"][k];
+            return '<div class="rc"><div class="rc-top"><span class="rc-type">' + rs[0] + '</span><span class="rc-lvl">' + DIFF[i] + '</span></div><b>' + esc(nm) + ': ' + lab + '</b><p>' + rs[1] + '</p></div>'; }).join("") + '</div>' +
+          '<p class="res-note">These are sample resources shown as placeholders. Real links will be added later.</p>' +
+          '<div class="st-foot"><button class="btn btn-primary complete-btn" type="button">Complete this stage</button></div>' +
+          '</div></div></div></div>';
+        tl.appendChild(li);
+      });
+      setOpen(0); updateProgress(true);
+      rmSection.hidden = false;
+      rmSection.scrollIntoView({ behavior: "smooth" });
+      document.getElementById("rmTitle").focus({ preventScroll: true });
+    }
+
+    function setOpen(idx) {
+      openIdx = idx;
+      tl.querySelectorAll(".st").forEach(function (li, i) {
+        var on = i === idx;
+        li.querySelector(".st-body").classList.toggle("open", on);
+        var b = li.querySelector(".st-btn"); b.setAttribute("aria-expanded", String(on));
+        b.firstChild.textContent = on ? "Hide Stage " : "View Stage ";
+      });
+    }
+
+    function updateProgress(quiet) {
+      var cur = -1, doneStages = 0, sum = 0, next = null;
+      var segs = document.querySelectorAll("#rmSegs .seg span");
+      tl.querySelectorAll(".st").forEach(function (li, i) {
+        var boxes = li.querySelectorAll("input[type=checkbox]"), n = 0;
+        boxes.forEach(function (b) {
+          if (b.checked) n++; else if (!next) next = b;
+          var sk = b.closest(".sk"); sk.classList.toggle("done", b.checked);
+          sk.querySelector(".sk-state").textContent = b.checked ? "✓ Completed" : "";
+          b.nextElementSibling.textContent = b.checked ? "✓ Completed" : "Mark as complete";
+        });
+        var complete = n === boxes.length, frac = n / boxes.length;
+        if (complete) doneStages++; else if (cur < 0) cur = i;
+        sum += frac; segs[i].style.width = Math.round(frac * 100) + "%";
+        li.classList.toggle("done", complete);
+        li.querySelector(".st-node").textContent = complete ? "✓" : String(i + 1).padStart(2, "0");
+        var c = li.querySelector(".count"); c.textContent = n + " of " + boxes.length + " done"; c.classList.toggle("ok", complete);
+        var cb = li.querySelector(".complete-btn"); cb.disabled = complete; cb.textContent = complete ? "Stage completed ✓" : "Complete this stage";
+      });
+      tl.querySelectorAll(".st").forEach(function (li, i) { li.classList.toggle("current", i === cur); });
+      var pct = Math.round(sum / 5 * 100);
+      document.getElementById("rmPct").textContent = pct + "%";
+      document.getElementById("rmStage").textContent = doneStages + " of 5 stages completed";
+      document.getElementById("rmSegs").setAttribute("aria-valuenow", pct);
+      var nu = document.getElementById("nextUp"), nb = document.getElementById("nxBtn");
+      nu.hidden = false;
+      if (next) {
+        var sk = next.closest(".sk"), si = Number(next.dataset.key.split(":")[0]);
+        document.getElementById("nxTitle").textContent = (si < 3 ? "Master " : "Work on ") + sk.querySelector(".sk-name").textContent;
+        document.getElementById("nxTime").textContent = "Estimated time: " + sk.dataset.time;
+        nb.hidden = false; nb.onclick = function () { setOpen(si); sk.open = true; sk.scrollIntoView({ behavior: "smooth", block: "center" }); };
+      } else {
+        document.getElementById("nxTitle").textContent = "You have completed this roadmap";
+        document.getElementById("nxTime").textContent = "Keep building projects and start applying.";
+        nb.hidden = true;
+      }
+      return { doneStages: doneStages, pct: pct };
+    }
+
+    function toast(msg) {
+      toastEl.textContent = msg; toastEl.classList.add("show");
+      clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove("show"); }, 3200);
+    }
+
+    tl.addEventListener("click", function (e) {
+      var li = e.target.closest(".st"); if (!li) return;
+      var i = Number(li.dataset.i);
+      if (e.target.closest(".proj-btn")) { openProject(i); return; }
+      if (e.target.closest(".complete-btn")) {
+        progress[current] = progress[current] || {};
+        li.querySelectorAll("input[type=checkbox]").forEach(function (b) { b.checked = true; progress[current][b.dataset.key] = true; });
+        save(); var s = updateProgress();
+        var card = li.querySelector(".st-card"); card.classList.remove("flash"); void card.offsetWidth; card.classList.add("flash");
+        toast(s.doneStages + " of 5 stages completed · " + s.pct + "% roadmap complete");
+        return;
+      }
+      if (e.target.closest(".st-btn")) setOpen(openIdx === i ? -1 : i);
+    });
+    tl.addEventListener("change", function (e) {
+      var k = e.target.dataset.key; if (!k) return;
+      progress[current] = progress[current] || {};
+      if (e.target.checked) progress[current][k] = true; else delete progress[current][k];
+      save(); updateProgress();
+    });
+
+    function openProject(i) {
+      var p = projects[i];
+      dlg.innerHTML = '<h3 id="pdTitle">' + esc(p.n) + '</h3><p>' + esc(p.d) + '</p>' +
+        '<div class="sk-meta"><span class="pill">Difficulty: ' + p.df + '</span><span class="pill">Estimated time: ' + p.t + '</span></div>' +
+        '<h4>Skills practiced</h4><div class="tags">' + p.sp.map(function (s) { return '<span class="tag">' + esc(s) + '</span>'; }).join("") + '</div>' +
+        '<h4>What to deliver</h4><p>A working result and a short write-up of what you built, what went wrong and what you learned.</p>' +
+        '<button class="btn btn-primary" type="button" id="pdClose">Close</button>';
+      dlg.showModal();
+      document.getElementById("pdClose").onclick = function () { dlg.close(); };
+    }
+    dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); });
+    document.getElementById("changeBtn").addEventListener("click", function () {
+      document.getElementById("careers").scrollIntoView({ behavior: "smooth" });
+    });
+  
+    // Theme switcher (Dark / Light), remembered in this browser
+    var themeBtn = document.getElementById("themeToggle");
+    function showTheme(t) {
+      document.documentElement.dataset.theme = t;
+      themeBtn.setAttribute("aria-label", t === "light" ? "Switch to dark theme" : "Switch to light theme");
+    }
+    showTheme(document.documentElement.dataset.theme || "dark");
+    themeBtn.addEventListener("click", function () {
+      var next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+      document.documentElement.classList.add("theme-anim");
+      showTheme(next);
+      try { localStorage.setItem("cp-theme", next); } catch (e) {}
+      setTimeout(function () { document.documentElement.classList.remove("theme-anim"); }, 450);
+    });
+  </script>
+</body>
+</html>
